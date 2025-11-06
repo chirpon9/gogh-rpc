@@ -1,6 +1,6 @@
 # gogh RPC
 
-gogh RPC (RIch Presence) allows you to show details about your status when you are on gogh such as which room you are in with how many players
+gogh RPC (RIch Presence)
 
 <img width="550" height="222" alt="image" src="https://github.com/user-attachments/assets/d7011f29-9513-4c39-ba4f-b9a23640d1e6" />
 <img width="550" height="248" alt="image" src="https://github.com/user-attachments/assets/376c77cf-7dd6-488b-a99d-e585ab95ec72" />
