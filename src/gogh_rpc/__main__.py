@@ -1,5 +1,4 @@
-from . import LogParser, start_file_watcher, PresenceUpdater
-
+from gogh_rpc import LogParser, start_file_watcher, PresenceUpdater
 def main():
     presence = PresenceUpdater()
     parser = LogParser(parsed_data_callback=presence.update_lobby)
