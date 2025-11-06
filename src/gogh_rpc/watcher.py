@@ -1,9 +1,26 @@
 import time
 import os
+import sys
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-DIR = os.path.expanduser("~/Library/Application Support/gogh Japan/gogh/Logs")
+
+def get_log_directory():
+    if sys.platform == "darwin":
+        return os.path.expanduser("~/Library/Application Support/gogh Japan/gogh/Logs")
+    
+    elif sys.platform == "win32":
+        appdata_path = os.getenv('APPDATA')
+        
+        if not appdata_path:
+            appdata_path = os.path.expanduser("~\\AppData\\LocalLow\\gogh Japan\\gogh\\Logs")
+            
+        return os.path.join(appdata_path)
+        
+    else:
+        raise NotImplementedError({sys.platform})
+
+DIR = get_log_directory()
 
 def find_newest_log_file(directory):
     newest_file_path = None
