@@ -20,5 +20,3 @@ Run the program before or after launching gogh: Focus with Your Avatar. It shoul
 ## Disclaimer
 
 This project is not affiliated with gogh.
-
-If there are any issues please open a ticket
