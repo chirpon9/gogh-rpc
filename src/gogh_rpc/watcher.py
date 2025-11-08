@@ -43,11 +43,13 @@ def find_newest_log_file(directory):
     return newest_file_path
 
 class Handler(FileSystemEventHandler): #checks for new log files
-    def __init__(self, new_log_callback, log_update_callback):
+    def __init__(self, new_log_callback, log_update_callback, game_closed_callback):
         super().__init__()
         self.on_new_log_found = new_log_callback
         self.on_log_updated = log_update_callback
+        self.on_game_closed = game_closed_callback
         self.current_log_file = None
+        self.last_modified_time = time.time()
 
     def on_created(self, event):
         if event.is_directory:
@@ -56,6 +58,7 @@ class Handler(FileSystemEventHandler): #checks for new log files
         filename = os.path.basename(event.src_path)
         if filename.startswith("NetworkLog_") and filename.endswith(".txt"):
             self.current_log_file = event.src_path
+            self.last_modified_time = time.time()
             self.on_new_log_found(self.current_log_file)
 
     def on_modified(self, event):
@@ -63,14 +66,21 @@ class Handler(FileSystemEventHandler): #checks for new log files
             return
             
         if event.src_path == self.current_log_file:
+            self.last_modified_time = time.time()
             self.on_log_updated()
+    
+    def check_for_timeout(self, timeout_seconds):
+        if self.current_log_file and (time.time() - self.last_modified_time) > timeout_seconds:
+            return True
+        return False
 
-def start_file_watcher(new_log_callback, log_update_callback):
-    event_handler = Handler(new_log_callback, log_update_callback)
+def start_file_watcher(new_log_callback, log_update_callback, game_closed_callback=None, timeout_seconds=60):
+    event_handler = Handler(new_log_callback, log_update_callback, game_closed_callback)
     existing_log = find_newest_log_file(DIR)
     
     if existing_log:
         event_handler.current_log_file = existing_log
+        event_handler.last_modified_time = time.time()
         new_log_callback(existing_log)
 
     observer = Observer()
@@ -78,9 +88,16 @@ def start_file_watcher(new_log_callback, log_update_callback):
     observer.start()
 
     try:
-        print(f"Observer started")
+        print(f"Observer started, monitoring for game activity (timeout: {timeout_seconds}s)")
         while True:
             time.sleep(1)
+            
+            # Check if the game has been inactive for too long
+            if game_closed_callback and event_handler.check_for_timeout(timeout_seconds):
+                print(f"No log activity for {timeout_seconds} seconds, game appears to be closed")
+                game_closed_callback()
+                break
+                
     except FileNotFoundError:
         print("file not found")
     except Exception as e:
